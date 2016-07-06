@@ -6,10 +6,11 @@ Utilities for reading and ploting ESA MARSIS radar data
 
 Please feel free to contact me with questions
 
-Main GUI
-========
-``UserGUI.m`` is the main program to run. It will allow you to auto-download and plot
-MARSIS ionospheric radar data by date. But first do the one-time setup.
+CLI main program
+================
+Generate plots for the date you desire (optionally specify hour,minute,second)::
+
+    NoGui([year,month,day])
 
 
 Setup
@@ -37,3 +38,9 @@ or::
 
     cc read_ais.c -o read_ais
     
+    
+Main GUI (optional)
+===================
+``UserGUI.m`` is the main program to run. It will allow you to auto-download and plot
+MARSIS ionospheric radar data by date. But first do the one-time setup.
+

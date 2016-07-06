@@ -1,4 +1,4 @@
-function AISftp(folder,filename,hPtxt,hGo,varargin)
+function AISftp(folder,filename,hGo,varargin)
 
 if ~isempty(varargin)
     host = varargin{1};
@@ -9,7 +9,6 @@ end
 try
 f = ftp(host);
 catch exception
-    UpdateProgDisp(hPtxt,['Could not open FTP connection to ',host])
     disp(['Could not open FTP connection to ',host])
     throw(exception)
 end
@@ -49,10 +48,11 @@ if ~strcmp(temp,[folder filename '.dat'])
 end
 
 catch exception
-    set(hGo,'String','Go !')
-    UpdateProgDisp(hPtxt,{'FTP error--could not download.';' See MATLAB Command Window for details'})
+    if ~isempty(hGo)
+        set(hGo,'String','Go !')
+    end
     disp(['Could not download ' filename ' from ' host '.'])
-    disp(['Here are the available files in this FTP directory '])
+    disp('Here are the available files in this FTP directory ')
     dir(f)
     error([exception.message, ' See above for directory/file listing on the FTP server.'])
 end

@@ -1,4 +1,4 @@
-clc, clear all
+function OrbReader()
 % data in 'orbnum.mat' converted from:
 % ftp://naif.jpl.nasa.gov/pub/naif/pds/data/mex-e_m-spice-6-v1.0/mexsp_1000/EXTRAS/ORBNUM/ORMM_MERGED_00731.ORB
 % and
@@ -35,5 +35,6 @@ end
 disp(['saving ',newfn])
 save(newfn,'AISorbNum','AISkey')
 
+end
 
 

@@ -1,18 +1,10 @@
 % to create ionograms from raw data
-function [year, day, time_x, frequency_y, band, receiverAtt, powerLevel, signal_z] = ReadAisFile(folder, filename,hGo,hPtxt)
+function [year, day, time_x, frequency_y, band, receiverAtt, powerLevel, signal_z] = ReadAisFile(folder, filename,hGo)
 %% check if DATA folder exists, if not, you need to download the PDS data
 if ~exist(folder,'dir')
-    AISftp(folder,filename,hPtxt,hGo)
+    AISftp(folder,filename,hGo)
 end
 %% First look to see if PDS data has already been converted to MATLAB format
-%old code: 
-%{
-d= dir(folder);
-
-if strfind(filename,'.txt') 
-   filename = filename(1:(end-4));
-end
-%}
 [~,filename] = fileparts(filename); %strip extension
 
 if exist([folder filename '.mat'],'file')
@@ -20,7 +12,6 @@ if exist([folder filename '.mat'],'file')
     load([folder filename '.mat'])
     return
 end
-
 %% if MATLAB formatted data not found, see if ASCII data exists
 % if ASCII data doesn't exist, look for binary .dat file
 if exist([folder filename '.txt'],'file')
@@ -28,15 +19,9 @@ if exist([folder filename '.txt'],'file')
 else
 
     if ~exist([folder filename '.dat'],'file')
-        set(hGo,'String','FTP Downloading...')
-        UpdateProgDisp(hPtxt,['Downloading ',filename,', this may take a few minutes...']), pause(0.1)
-        tic
-        AISftp(folder,filename,hPtxt,hGo)
-        FTPtime = toc/60;
-        UpdateProgDisp(hPtxt,['Download completed in ',num2str(FTPtime,'%3.1f'),' minutes.']), pause(0.1)
+        disp(['Downloading ',filename,', this may take a few minutes...'])
+        AISftp(folder,filename,hGo)
     end
-
-    %set(hGo,'String','Converting DAT to TXT')
 
 if ispc
     cmdTxt = 'read_ais ';
@@ -46,7 +31,6 @@ end
 
 ReadAISstatus = system([cmdTxt folder filename '.dat > ' folder filename '.txt']) %#ok<NOPRT>
 if ReadAISstatus
-    UpdateProgDisp(hPtxt,['Error: Could not automatically convert binary ' folder filename '.dat to ASCII'])
     error(['Could not automatically convert binary ' folder filename '.dat to ASCII'])
 end
 end    

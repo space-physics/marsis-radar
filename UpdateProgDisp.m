@@ -2,8 +2,16 @@
 %     Maxlines is an option argument
 
 function error = UpdateProgDisp(h,New,varargin)
-
-if isempty(varargin), Nmax = 4; else Nmax = varargin{1}; end
+if isempty(h)
+    return
+end
+    
+    
+if isempty(varargin)
+    Nmax = 4; 
+else
+    Nmax = varargin{1}; 
+end
 try
 hPrev = get(h,'String');
 

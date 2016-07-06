@@ -9,7 +9,7 @@
 % Original code base for InitialPlot.m and its subroutines provided by jls@bu.edu
 
 function UserGUI()
-clc, clear, close all
+clc
 
 cStruct.linearUnits = true;
 cStruct.origFreqScale = true; %false to produce Gurnett plots
@@ -112,9 +112,10 @@ end
 
 [cStruct.UserSel.aisNumber, cStruct.UserSel.hour] =...
     LookupOrbit(cStruct.UserSel.month,cStruct.UserSel.day,cStruct.UserSel.year,cStruct.UserSel.hour);
-if oldAis ~= cStruct.UserSel.aisNumber, firstRun = true; end
-cStruct.TimeAv = InitialPlot(cStruct.UserSel,pData,...
-        hGo,hPtxt,false,cStruct.linearUnits,cStruct); %main program Code
+if oldAis ~= cStruct.UserSel.aisNumber
+    firstRun = true; 
+end
+cStruct.TimeAv = InitialPlot(cStruct.UserSel,pData,hGo,hPtxt,cStruct); %main program Code
 
 % add movie start/stop times to GUI
 if firstRun
@@ -248,36 +249,7 @@ while all(a<=aEnd-1)
     
     a = aOrig(1)+(((iL-1)*160):(iL-1)*160+160-1);
     [hour, minute, sec] = ConvertSecIndexToTime(time_x(a(1)));
-%{    
-       timeDelay = linspace(0.25,7.5,80); %ms
-freqMHz = frequency_y(a)/1e3; % MHz
-NumLinFreqPoints = 500; %orig program was 1000
-freqLin = linspace(freqMHz(1),freqMHz(end),...
-            NumLinFreqPoints);
-    
-    im = signal_z(:,a);  %#ok<NODEF>
-%% correct for non-linear chirp
-% the MARSIS RF chirp is 160 points, spread between approx. 100kHz to approx. 5.5MHz
-% it's desirable to put this back to a linear scale for display.
 
-if ~cStruct.origFreqScale
-imC = nan(size(im)); %tt = nan(NumLinFreqPoints,1);
-   
-    for i = 1:length(freqLin) %<caution> can throw away data if NumLinFreqPoints is too low
-        %<update> what about using interpolation?
-        % take i-th row, its frequency is freqLin(i)
-        t = find(freqMHz >= freqLin(i),1,'first'); 
-        imC(:,i) = im(:,t);
-        
-        %diagnostic
-       %if 0, tt(i) = t; end
-
-    end
-else
-    imC = im; %no freq scaling--uses non-linear freq. sampling (as MARSIS hardware does)
-end
-    if ~cStruct.linearUnits, imC = log10(imC); end
-%}
     [timeDelay,freqMHz,freqLin,imC] = dataMangle(cStruct,frequency_y,a,signal_z);
     %% TEST
     
