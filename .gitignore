@@ -1,0 +1,4 @@
+*.out
+*.mat
+data/
+read_ais

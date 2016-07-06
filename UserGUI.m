@@ -1,12 +1,11 @@
 % USERGUI is the main M-file the user directly runs to
 % examine the MARSIS AIS data.
 %
-% Status: experimental 'alpha' code, not guaranteed to give desired results
+% Status: experimental, not guaranteed to give desired results
 % 
-% Requirements: MATLAB R2010b or never to create movies
 %
 % August 2011
-% mhirsch@bu.edu 
+% Michael Hirsch 
 % Original code base for InitialPlot.m and its subroutines provided by jls@bu.edu
 
 function UserGUI()
@@ -18,14 +17,19 @@ cStruct.origFreqScale = true; %false to produce Gurnett plots
 if cStruct.linearUnits
     cStruct.CaxLim = [1e-20,1e-15];
 else
-    cStruct.CaxLim = [-17 -9];
+    cStruct.CaxLim = [-17, -9];
 end
 
 AISorbNum = load('orbnum.mat'); AISorbNum = AISorbNum.AISorbNum;
 oldAis = [];
 firstRun = true;
 c = 299792458; % [m/s]
-MovCmap = load('MovCmap.mat'); MovCmap=MovCmap.MovCmap;
+%% colormap for Martian surface 
+try 
+    MovCmap = load('MovCmap.mat'); MovCmap=MovCmap.MovCmap;
+catch
+    MovCmap = [];
+end
 
 host = 'pds-geosciences.wustl.edu/mex/';
 
@@ -65,7 +69,7 @@ text(-25,560,'10^','Parent',hD,'Units','pixels','Interpreter','none','HandleVisi
 end
 hTitle=title(hD,'');
 %}
-[SelData L uRad hFBsel hPtxt cStruct] = GUIlistMaker(FrameSp,cStruct); %sets up initial GUI
+[SelData, L, hFBsel, hPtxt, cStruct] = GUIlistMaker(FrameSp,cStruct); %sets up initial GUI
 
 hGo = uicontrol(pUinput,'Style','pushbutton',...
                         'Pos',[30,pP(4)-320,120,30],...
@@ -77,7 +81,6 @@ hGo = uicontrol(pUinput,'Style','pushbutton',...
 hGoMovie = uicontrol(pUinput,'Style','pushbutton','Pos', [10,pP(4)-635,100,30],'String','MAKE Movie',...
                         'Interruptible','on','fontsize',9,...
                         'Callback',@flipB);
-compType = computer;
 
 hPlayMovie = uicontrol(pUinput,'Style','pushbutton','Pos', [10+100+10,pP(4)-635,85,30],'String','PLAY Movie',...
                         'Interruptible','on','fontsize',9,...
@@ -105,13 +108,13 @@ function getAISdata(hObject,eventdata)
 if ~firstRun
         oldAis = cStruct.UserSel.aisNumber;
 end
-        cStruct.UserSel = UserDataCleanser(SelData,L.years(6:end),uRad);
+        cStruct.UserSel = UserDataCleanser(SelData,L.years(6:end));
 
-[cStruct.UserSel.aisNumber cStruct.UserSel.hour] =...
+[cStruct.UserSel.aisNumber, cStruct.UserSel.hour] =...
     LookupOrbit(cStruct.UserSel.month,cStruct.UserSel.day,cStruct.UserSel.year,cStruct.UserSel.hour);
 if oldAis ~= cStruct.UserSel.aisNumber, firstRun = true; end
 cStruct.TimeAv = InitialPlot(cStruct.UserSel,pData,...
-        hGo,hPtxt,false,compType,cStruct.linearUnits,cStruct); %main program Code
+        hGo,hPtxt,false,cStruct.linearUnits,cStruct); %main program Code
 
 % add movie start/stop times to GUI
 if firstRun
@@ -127,7 +130,7 @@ set(hGoMovie,'BackgroundColor','Green','String','MAKE Movie')
 end
 %==========================================================================
 function [AISnum] = LookupOrbitEmb(hObject,eventdata)
-       US = UserDataCleanser(SelData,L.years(6:end),uRad);
+       US = UserDataCleanser(SelData,L.years(6:end));
         
         AISnum = AISorbNum(AISorbNum(:,2)==US.year & AISorbNum(:,3)==US.month & ...
                     AISorbNum(:,4)==US.day & AISorbNum(:,5)==US.hour,1);
@@ -453,7 +456,7 @@ function PlayAISmovie(hObject,eventdata)
  end
 
 %% helper functions   
-function [UserSel] = UserDataCleanser(SelData,years,uRad)
+function [UserSel] = UserDataCleanser(SelData,years)
      %converts user selected indicies to actual values
      years = textscan(years,'%f|',100); years=years{1};
      try
@@ -469,7 +472,7 @@ function [UserSel] = UserDataCleanser(SelData,years,uRad)
      
      cStruct.Def.dy = get(SelData.day,'Value');
      UserSel.day = cStruct.Def.dy -1; 
-     if UserSel.day == 0, 
+     if UserSel.day == 0
          UpdateProgDisp(hPtxt,'Please select desired day')
          error('Please select desired day')
      end
@@ -486,7 +489,6 @@ function [UserSel] = UserDataCleanser(SelData,years,uRad)
      UserSel.hour   = hour;
      UserSel.minute = minute;
      UserSel.second = second;
-     UserSel.download = get(uRad.Y,'Value'); cStruct.Def.ftp = UserSel.download;
      cStruct.Def.srv = get(SelData.server,'Value');
  
      UpdateProgDisp(hPtxt,['User Selected Data: ',num2str(UserSel.year),num2str(UserSel.month,'%02.0f'),num2str(UserSel.day,'%02.0f'),'T',num2str(hour,'%02.0f'),':',num2str(minute,'%02.0f'),':',num2str(second,'%02.0f'),' UT']);
@@ -494,13 +496,13 @@ pause(0.1)
 end
 
 function hFBsel =  UpdateMovieMenu(TimeAv,hFBsel)
-    [HourAv MinAv SecAv] = ConvertSecIndexToTime(TimeAv.t);
+    [HourAv, MinAv, SecAv] = ConvertSecIndexToTime(TimeAv.t);
     hr=HourAv(1); mn=MinAv(1); sc=SecAv(1);
     Avail{1} = [num2str(hr(1),'%02.0f'),':',num2str(mn(1),'%02.0f'),':',num2str(sc(1),'%02.0f')];
     ii = 1; N = length(TimeAv.t)/160; %round((TimeAv.t(end)-TimeAv.t(1))./160);
     while ii+1<=N
         ii=ii+1;
-        [hr(ii) mn(ii) sc(ii)] = ConvertSecIndexToTime(TimeAv.t((ii-1)*160+1));
+        [hr(ii), mn(ii), sc(ii)] = ConvertSecIndexToTime(TimeAv.t((ii-1)*160+1));
         Avail{ii} = [num2str(hr(ii),'%02.0f'),':',num2str(mn(ii),'%02.0f'),':',num2str(sc(ii),'%02.0f')];
      end
             
@@ -511,7 +513,7 @@ function hFBsel =  UpdateMovieMenu(TimeAv,hFBsel)
 end
 
 %% setup GUI
-function [SelData L uRad hFBsel hPtxt cStruct] = GUIlistMaker(FrameSp,cStruct)
+function [SelData, L, hFBsel, hPtxt, cStruct] = GUIlistMaker(FrameSp,cStruct)
     try load('AISguiDefaults.mat')
     catch, Def.yr = 1; Def.mo = 1; Def.dy = 1; Def.hr = 1; Def.mn = 1; Def.sc = 1;
         Def.Start = 1; Def.End = 1; Def.frm = 5; Def.fmt = 1; Def.ftp = true; Def.srv = 1;
@@ -578,14 +580,6 @@ uicontrol(pUinput,'Style','text','Pos',[5,pP(4)-150,250,15],'String','PDS FTP Se
 SelData.server = uicontrol(pUinput,'Style','popup','String',host,'Pos',[5,pP(4)-165,250,15],'Value',Def.srv);
 
 
-uicontrol(pUinput,'Style','text','Pos',[8,pP(4)-250,290,45],...
-    'String','Download data via FTP if no local copy? (takes 1-2 minutes to download)','BackgroundColor','white');
-hRadG1 = uibuttongroup('Units','pixels','Pos',[5,pP(4)-255,390,55],'Parent',pUinput);
-uRad.Y = uicontrol('Style','radio','String','Yes','Pos',[295,20,40,15],'Parent',hRadG1);
-uRad.N = uicontrol('Style','radio','String','No','Pos',[345,20,40,15],'Parent',hRadG1);
-if Def.ftp, DefFTP = uRad.N; else DefFTP = uRad.Y; end
-set(hRadG1,'SelectedObject',DefFTP)
-set(hRadG1,'Visible','on');
 
 uicontrol(pUinput,'Style','text','Pos',[10,pP(4)-280,280,20],'FontSize',10,...
     'String','2. Press ''Go !'' to see AIS measurement result');

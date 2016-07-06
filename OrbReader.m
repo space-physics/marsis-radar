@@ -6,12 +6,11 @@ clc, clear all
 % (esa.int is more up to date)
 % then
 % use OrbReader.m to produce orbnum.mat
-fid=fopen('~/MARSIS/MATLABcode/selectedmarsisdata/EXTRAS/ORBNUM/ORMM_MERGED_00877.ORB');
+fid=fopen('data/ORMM_MERGED_00966.ORB');
 newfn = 'orbnum.mat';
-fseek(fid,363,-1);
-xx = textscan(fid,'%u %u %s %u %u:%u:%u %*[^\n]');
+xx = textscan(fid,'%u %u %s %u %u:%u:%u %*[^\n]','HeaderLines',2);
 fclose(fid);
-
+%% convert text times 
 ii = [1:2,4:7];
 for jj = 1:6
     zz(:,ii(jj)) = xx{ii(jj)};
@@ -30,8 +29,10 @@ AISkey = {'AIS Orbit Number','Year','Month','Day','Hour','Minute','Second'};
 if exist(newfn,'file')
     oldfn = [date,'_',num2str(cputime),'_orbnum.mat'];
     movefile(newfn,oldfn)
-    display(['Saved old ',newfn,' file as ',oldfn])
+    disp(['Saved old ',newfn,' file as ',oldfn])
 end
+%% save
+disp(['saving ',newfn])
 save(newfn,'AISorbNum','AISkey')
 
 

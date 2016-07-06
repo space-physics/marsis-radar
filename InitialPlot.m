@@ -1,4 +1,4 @@
-function TimeAv = InitialPlot(sD,fPanel,hGo,hPtxt,flipbook,compType,linearUnits,cStruct)
+function TimeAv = InitialPlot(sD,fPanel,hGo,hPtxt,flipbook,linearUnits,cStruct)
 year=sD.year; month = sD.month; day1 = sD.day; hour=sD.hour; minute=sD.minute; sec=sD.second;
 aisNumber = sD.aisNumber; 
 
@@ -9,17 +9,11 @@ c = 299792458; % [m/s]
 filename = ['frm_ais_rdr_', num2str(aisNumber)]; 
 aisTextNum = num2str(aisNumber);
 %%check computer type (Windoze, Linux, Mac)
-switch compType(1:4)
- case 'PCWI', folder = [pwd '\selectedmarsisdata\DATA\RDR' aisTextNum(1:3) 'X\'];
- case 'GLNX', folder = [pwd '/selectedmarsisdata/DATA/RDR' aisTextNum(1:3) 'X/'];
-   otherwise, error(['Your computer type: ' compType ' is not known to this program. Contact mhirsch@bu.edu for help.'])
-end
-
-
+folder = [pwd '/data/RDR', aisTextNum(1:3), 'X/'];
 %% load data from frm_ais_rdr_'aisNumber' mat file
 
 [year, day, time_x, frequency_y, band, receiverAtt, powerLevel, signal_z] = ...
-    ReadAisFile(folder, filename,hGo,sD.download,hPtxt,compType);
+    ReadAisFile(folder, filename,hGo,hPtxt);
 
 %set(hGo,'String','Searching in Time')
 % locates exact time moment
