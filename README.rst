@@ -2,7 +2,8 @@
 marsis-utils
 ============
 
-Utilities for reading and ploting ESA MARSIS radar data
+Utilities for reading and ploting ESA MARSIS radar data. 
+Works with GNU Octave and Matlab.
 
 Please feel free to contact me with questions
 
