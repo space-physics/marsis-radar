@@ -7,27 +7,29 @@ function [AISnum, hour] = LookupOrbit(month,day,year,hour)
 % (esa.int is more up to date)
 % then
 % use OrbReader.m to produce orbnum.mat
-AISorbNum = load('orbnum.mat'); AISorbNum=AISorbNum.AISorbNum;
+AISorbNum = load('orbnum.mat','AISorbNum'); AISorbNum=AISorbNum.AISorbNum;
 
 AISnum = AISorbNum(AISorbNum(:,2)==year & AISorbNum(:,3)==month & ...
                     AISorbNum(:,4)==day & AISorbNum(:,5)==hour,1);
                 
 if isempty(AISnum)
-    warning(['There were no AIS data taken by the MARSIS radar at: '...
+    disp(['There were no AIS data taken by the MARSIS radar at: '...
               datestr(datenum(year,month,day,hour,0,0)), ' UT'])
-    temp = double(AISorbNum(AISorbNum(:,2)==year & AISorbNum(:,3)==month & ...
-                    AISorbNum(:,4)==day,:)); %at least find something from the same calendar day
-                ind = findnearest(hour,temp(:,5));
+    
+    %at least find something from the same calendar day
+    temp = double(AISorbNum(AISorbNum(:,2)==year & AISorbNum(:,3)==month & AISorbNum(:,4)==day,:)); 
+    ind = findnearest(hour,temp(:,5));
+    
     AISnum = temp(ind,1);
+    
     if isempty(AISnum)
         warning(['Could not find any AIS data for calendar day ',datestr(datenum(year,month,day))])
-    else
-        
+    else    
         disp(['Substituted data from hour ' num2str(temp(ind,5),'%02d')...
             ' UT in place of your request for hour ' num2str(hour,'%02d') ' UT '])
         hour = temp(ind,5);
     end
                 
-end
+end %if
 
-end
+end %function

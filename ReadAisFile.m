@@ -1,5 +1,9 @@
 % to create ionograms from raw data
 function [year, day, time_x, frequency_y, band, receiverAtt, powerLevel, signal_z] = ReadAisFile(folder, filename,hGo)
+try
+ page_screen_output(0)
+end
+
 %% check if DATA folder exists, if not, you need to download the PDS data
 if ~exist(folder,'dir')
     AISftp(folder,filename,hGo)
@@ -37,8 +41,7 @@ end
 
 %set(hGo,'String','Converting TXT to MAT')
 fid = fopen([folder filename '.txt']);
-i = 1; iWait = 1;
-isDateSet = 0;
+i = 1;
 tic
 time_x = zeros(1,100000);
 frequency_y = zeros(1,100000);
@@ -46,36 +49,23 @@ band = zeros(1,100000);
 receiverAtt = zeros(1,100000);
 powerLevel = zeros(1,100000);
 signal_z = zeros(80,100000);
-%% estimate size for waitbar
-  
-    %old code in brackets
-    %{ 
-bool = 1;
-i = 0;
-while bool
-    i = i + 1;
-    d(i).name
-    if strfind(d(i).name,'.txt')%searches for text files
-        bool = 0;
-    end
-end
-    %}
+
 d = dir([folder filename '.txt']);  %find filesize
 num = round(d(1).bytes/881); %old code: num = round(d(i).bytes/881);
-h = waitbar(0,'Please wait...');
+
 %%
 try
 while ~feof(fid)
-    iWait = iWait + 1;
-    if iWait > 2000, waitbar(i/num,h); iWait = 0; end
     a = fgetl(fid);
-    if size(a,2) < 1, continue, end
+    if size(a,2) < 1
+      continue
+    end % blank line skip
+    
     switch a(1:11)
-        case 'Frame Begin'     %if (strfind(a,'Frame Begin Time')~=0)
+        case 'Frame Begin'   
         time_x(i) = ConvertToTime(a);
-        if (~isDateSet)
+        if i==0
             [year, day] = SetDate(a);
-            isDateSet = 1;
         end
                             % end
         case 'Transmit Fr'     %if (strfind(a,'Transmit Frequency')~=0)
@@ -95,11 +85,14 @@ while ~feof(fid)
         end   
         signal_z(:,i) = ConvertToSignal(a);
         i = i + 1;
-    end                    %end
+        if ~mod(i,200)
+          disp([num2str(i/num*100,'%.1f'),' %'])
+        end
+    end                   
 end
 catch exception
-    warning(['Error reading ' filename ' at file pointer: ' ftell(fid) ])
-    throw(exception)
+    disp(['Error reading ', filename, ' at file pointer: ', int2str(ftell(fid)) ])
+    rethrow(exception)
 end
 time_x = time_x(1:(i-1));
 frequency_y = frequency_y(1:(i-1));
@@ -110,23 +103,22 @@ signal_z = signal_z( :, 1:(i-1) );
 
 toc
 fclose(fid);
-close(h);
 %set(hGo,'String','Saving MAT to HDD')
 save([folder filename],'year', 'day', 'time_x', 'frequency_y', 'band', 'receiverAtt', 'powerLevel', 'signal_z');
 end
 
 function [year, day] = SetDate(a)
-year = str2double(a(21:24));
-temp = a(26:29);
-day = str2double(temp(1:strfind(temp,'T')-1));
+  year = str2double(a(21:24));
+  temp = a(26:29);
+  day = str2double(temp(1:strfind(temp,'T')-1));
 end
 
 function time_x = ConvertToTime(a)
-temp = a(size(a,2) - 11:size(a,2));
-hour = str2double(temp(1:2));
-min = str2double(temp(4:5));
-sec = str2double(temp(7:end));
-time_x = hour*3600 + min*60 + sec;
+  temp = a(size(a,2) - 11:size(a,2));
+  hour = str2double(temp(1:2));
+  min = str2double(temp(4:5));
+  sec = str2double(temp(7:end));
+  time_x = hour*3600 + min*60 + sec; % epoch seconds
 end
 
 function freq = ConvertToFrequency(a)

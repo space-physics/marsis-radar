@@ -56,7 +56,7 @@ elseif bias == 1  % only choose values >= to the search value
 end
 
 % give the correct output
-if nargout==1 | nargout==0
+if nargout<=1
     
     if all(isinf(srcharray(:)))
         r = [];

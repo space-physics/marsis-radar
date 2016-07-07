@@ -53,14 +53,14 @@ end
 if isempty(fPanel)
     fPanel = figure(1);
 end
-hD = axes('Parent',fPanel,'Units','pixels','Pos',[50 45 490 490]);
+hD = axes('Parent',fPanel,'Units','pixels','Position',[50 45 490 490]);
 hImg = imagesc(iXdata,timeDelay,imC,'Parent',hD, cs.CaxLim);
 
 if cs.origFreqScale %don't want inaccurate labels
     set(hD,'xtick',[freqMHz(1),freqMHz(end)]); 
 end 
 
-hD2 = axes('Parent',fPanel,'Units','pixels','Pos',get(hD,'Position'),...
+hD2 = axes('Parent',fPanel,'Units','pixels','Position',get(hD,'Position'),...
              'YAxisLocation','right','YDir','reverse',...
             'Color','none',...
             'xtick',[] ,'YColor','k'); %'XColor',get(fPanel,'BackGroundColor'),
@@ -86,17 +86,16 @@ a1 = (['frm\_ais\_rdr' num2str(aisNumber) '    ' num2str(month,'%02.0f') '/' num
 %title(a1,'Parent',hD);
 set(hTitle,'String',a1)
 
-Temp = get(hD,'Pos');
+Temp = get(hD,'Position');
 try %to get rid of old colorbar while preserving axes position
     delete(findobj(fPanel,'tag','Colorbar'))
-     
 end
 colormap(jet)
  colorbar('peer',hD,'Location','NorthOutside');
 
 %fix axes 2, since colorbar only pushes its peer axes down
 %set(hD2,'Position',get(hD,'Position'))
-set(hD,'Pos',Temp) %puts the axes back where they were, for new colorbar
+set(hD,'Position',Temp) %puts the axes back where they were, for new colorbar
 set(hGo,'String','Complete !','BackgroundColor','green')
 
 end
