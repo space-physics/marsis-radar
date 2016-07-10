@@ -1,18 +1,18 @@
-function TimeAv = InitialPlot(sD,fPanel,hGo,hPtxt,cs)
-year = sD.year; month = sD.month; day1 = sD.day; hour=sD.hour; minute=sD.minute; sec=sD.second;
+function TimeAv = InitialPlot(sD,fPanel,cs)
+
+month = sD.month; day1 = sD.day; 
+hour=sD.hour; minute=sD.minute; sec=sD.second;
+
 aisNumber = sD.aisNumber; 
 
 c = 299792458; % [m/s]
 
-%OCT 2011
 aisTextNum = int2str(aisNumber);
 filename = ['frm_ais_rdr_', aisTextNum]; 
 folder = [pwd '/data/RDR', aisTextNum(1:3), 'X/'];
 %% load data from frm_ais_rdr_'aisNumber' mat file
+[year, doy, time_x, frequency_y, band, receiverAtt, powerLevel, signal_z] = ReadAisFile(folder, filename);
 
-[year, doy, time_x, frequency_y, band, receiverAtt, powerLevel, signal_z] = ReadAisFile(folder, filename,hGo);
-
-%set(hGo,'String','Searching in Time')
 % locates exact time moment
 secIndex = ConvertTimeToSecIndex(hour, minute, sec);
 a = find( (time_x > secIndex - 1 ) & (time_x < secIndex + 1));
@@ -23,7 +23,6 @@ if isempty(a)
     a = findnearest(secIndex,time_x);
     [hour, minute, sec] = ConvertSecIndexToTime(time_x(a(1)));
     disp(['Using ' datestr(datenum(year,month,day1,hour,minute,sec)) 'UT instead.'])
-    UpdateProgDisp(hPtxt,['Using ' datestr(datenum(year,month,day1,hour,minute,sec)) 'UT instead.'])
 end
 
 TimeAv.t = time_x;
@@ -52,33 +51,40 @@ end
 
 if isempty(fPanel)
     fPanel = figure(1);
+    hD = axes;
+else
+    hD = axes('Parent',fPanel,'Units','pixels','Position',[50 45 490 490]);
 end
-hD = axes('Parent',fPanel,'Units','pixels','Position',[50 45 490 490]);
-hImg = imagesc(iXdata,timeDelay,imC,'Parent',hD, cs.CaxLim);
+
+hImg = imagesc(iXdata,...
+                c/2*[timeDelay(1) timeDelay(end)]/1e3/1e3,...
+                imC,...
+                'Parent',hD);
+%set(hImg,'edgecolor','none')
+set(hD,'clim',cs.CaxLim)
 
 if cs.origFreqScale %don't want inaccurate labels
-    set(hD,'xtick',[freqMHz(1),freqMHz(end)]); 
+    set(hD,'xtick',[freqMHz(1), freqMHz(end)]); 
 end 
+%% insert right axis labels with blank axes
+% this seems to be HG1 only -- consider yyaxis() new for R2016a
+% hD2 = axes('Parent',fPanel,'Units','pixels','Position',get(hD,'Position'),...
+%              'YAxisLocation','right','YDir','reverse',...
+%             'Color','none',...
+%             'xtick',[] ,'YColor','k'); %'XColor',get(fPanel,'BackGroundColor'),
+%ylabel(hD2,'\Deltat, Time delay (ms)')
+xlabel(hD,'f, Frequency (MHz)')
+ylabel(hD,'c\Deltat/2, Apparent Range (km)')
 
-hD2 = axes('Parent',fPanel,'Units','pixels','Position',get(hD,'Position'),...
-             'YAxisLocation','right','YDir','reverse',...
-            'Color','none',...
-            'xtick',[] ,'YColor','k'); %'XColor',get(fPanel,'BackGroundColor'),
-ylabel('\Deltat, Time delay (ms)','Parent',hD);
-xlabel('f, Frequency (MHz)','Parent',hD);
-ylabel('c\Deltat/2, Apparent Range (km)','Parent',hD2);
 
-a2 = 'Electric field spectral density (V^2 m^{-2} Hz^{-1})';
-text(128,590, a2,'Parent',hD,'Units','pixels','HandleVisibility','off')
 if ~cs.linearUnits
-text(-25,560,'10^','Parent',hD,'Units','pixels','Interpreter','none','HandleVisibility','off');
+text(-25,460,'10^','Parent',hD,'Units','pixels','Interpreter','none','HandleVisibility','off');
 end
 hTitle=title(hD,'');
-
-
 %% update figure
-set(hD2,'YLim',c/2*[timeDelay(1) timeDelay(end)]/1e3/1e3 );
-set(hD,'YLim',[timeDelay(1) timeDelay(end)])
+%set(hD,'YLim',c/2*[timeDelay(1) timeDelay(end)]/1e3/1e3 );
+%set(hD,'ytick',c/2*[timeDelay(1) timeDelay(end)]/1e3/1e3 );
+%set(hD2,'YLim',[timeDelay(1) timeDelay(end)])
 
 a1 = (['frm\_ais\_rdr' num2str(aisNumber) '    ' num2str(month,'%02.0f') '/' num2str(day1,'%02.0f') '/' num2str(year,'%4.0f') '   ' ...
     num2str(hour,'%02.0f') ':' num2str(minute,'%02.0f') ':' num2str(sec,'%02.0f') ' UT']);
@@ -86,16 +92,17 @@ a1 = (['frm\_ais\_rdr' num2str(aisNumber) '    ' num2str(month,'%02.0f') '/' num
 %title(a1,'Parent',hD);
 set(hTitle,'String',a1)
 
-Temp = get(hD,'Position');
+%Temp = get(hD,'Position');
 try %to get rid of old colorbar while preserving axes position
     delete(findobj(fPanel,'tag','Colorbar'))
 end
-colormap(jet)
+%colormap(jet)
  colorbar('peer',hD,'Location','NorthOutside');
-
+pause(0.05) %time to composite
+ a2 = 'Electric field spectral density (V^2 m^{-2} Hz^{-1})';
+text(90,360, a2,'Parent',hD,'Units','pixels','HandleVisibility','off')
+ 
 %fix axes 2, since colorbar only pushes its peer axes down
 %set(hD2,'Position',get(hD,'Position'))
-set(hD,'Position',Temp) %puts the axes back where they were, for new colorbar
-set(hGo,'String','Complete !','BackgroundColor','green')
-
+%set(hD,'Position',Temp) %puts the axes back where they were, for new colorbar
 end

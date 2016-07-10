@@ -1,5 +1,6 @@
 % load, plot, playback MARSIS data without bulky main GUI
-function NoGui(dt)
+function NoGui(dt,moviefn)
+if nargin<2, moviefn=''; end
 % INPUTS
 % dt: datevec() of requested time--at least [year,month,day]  optional [hour,min,sec]
 
@@ -24,5 +25,10 @@ cs.UserSel.day = dt(3);
 cs.UserSel.minute=0;
 cs.UserSel.second=0;
 %% found some data from that day, now plot
-cs.TimeAv = InitialPlot(cs.UserSel,[],[],[],cs);
-end
+cs.TimeAv = InitialPlot(cs.UserSel,[],cs);
+%% movie maker
+if ~isempty(moviefn)
+    flipB(cs,moviefn)
+end 
+
+end %function

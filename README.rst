@@ -5,17 +5,47 @@ marsis-utils
 Utilities for reading and ploting ESA MARSIS radar data. 
 Works with GNU Octave and Matlab.
 
-Please feel free to contact me with questions
+.. contents::
 
 CLI main program
 ================
 Generate plots for the date you desire (optionally specify hour,minute,second)::
 
-    NoGui([year,month,day])
+    NoGui([year,month,day],'out.avi')
+
+where 'out.avi' is the optional movie output filename, with available modes:
+
+======= =============
+Program output type
+======= =============
+Matlab  .avi, .tif, .mat, .mj2, .png
+Octave  .png, .mat
+======= =============
 
 
 Setup
 =====
+
+Compiling READAIS.C
+-------------------
+I obtained and cleaned up the original http://www-pw.physics.uiowa.edu/marsx/Gurnett_etal_GRL_2015/VOLUME/SOFTWARE/READAIS.C::
+
+    make
+    
+or::
+
+    cc read_ais.c -o read_ais
+    
+Examples
+========
+To see the data for Sept 9, 2008 starting at 1 UT::
+
+    NoGui([2008,9,9,1,0,0])
+
+
+Reference
+=========
+The normal user does not have to do these, or only infrequently.
 
 Creating orbnum.mat
 -------------------
@@ -28,20 +58,3 @@ Creating orbnum.mat
 
 alternative URL:
 http://ssols01.esac.esa.int/adcs/SPICE/ftp_browse.php?mission=MEX&type=orbnum
-
-Compiling READAIS.C
--------------------
-I obtained and cleaned up the original http://www-pw.physics.uiowa.edu/marsx/Gurnett_etal_GRL_2015/VOLUME/SOFTWARE/READAIS.C::
-
-    make
-    
-or::
-
-    cc read_ais.c -o read_ais
-    
-    
-Main GUI (optional)
-===================
-``UserGUI.m`` is the main program to run. It will allow you to auto-download and plot
-MARSIS ionospheric radar data by date. But first do the one-time setup.
-

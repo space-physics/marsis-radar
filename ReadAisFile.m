@@ -1,19 +1,19 @@
 % to create ionograms from raw data
-function [year, day, time_x, frequency_y, band, receiverAtt, powerLevel, signal_z] = ReadAisFile(folder, filename,hGo)
+function [year, day, time_x, frequency_y, band, receiverAtt, powerLevel, signal_z] = ReadAisFile(folder, filename)
 try
  page_screen_output(0)
 end
 
 %% check if DATA folder exists, if not, you need to download the PDS data
 if ~exist(folder,'dir')
-    AISftp(folder,filename,hGo)
+    AISftp(folder,filename)
 end
 %% First look to see if PDS data has already been converted to MATLAB format
 [~,filename] = fileparts(filename); %strip extension
 
 if exist([folder filename '.mat'],'file')
     disp(['Using existing .MAT file: ',folder, filename, '.mat'])
-    load([folder filename '.mat'])
+    load([folder filename '.mat'],'year', 'day', 'time_x', 'frequency_y', 'band', 'receiverAtt', 'powerLevel', 'signal_z')
     return
 end
 %% if MATLAB formatted data not found, see if ASCII data exists
@@ -23,23 +23,17 @@ if exist([folder filename '.txt'],'file')
 else
 
     if ~exist([folder filename '.dat'],'file')
-        disp(['Downloading ',filename,', this may take a few minutes...'])
-        AISftp(folder,filename,hGo)
+        AISftp(folder,filename)
     end
 
-if ispc
-    cmdTxt = 'read_ais ';
-else
-    cmdTxt = './read_ais ';
-end
+ReadAISstatus = system(['./read_ais ', folder filename '.dat > ' folder filename '.txt']) %#ok<NOPRT>
 
-ReadAISstatus = system([cmdTxt folder filename '.dat > ' folder filename '.txt']) %#ok<NOPRT>
 if ReadAISstatus
     error(['Could not automatically convert binary ' folder filename '.dat to ASCII'])
 end
-end    
 
-%set(hGo,'String','Converting TXT to MAT')
+end %if 
+
 fid = fopen([folder filename '.txt']);
 i = 1;
 tic
@@ -64,7 +58,7 @@ while ~feof(fid)
     switch a(1:11)
         case 'Frame Begin'   
         time_x(i) = ConvertToTime(a);
-        if i==0
+        if i==1
             [year, day] = SetDate(a);
         end
                             % end
@@ -103,8 +97,7 @@ signal_z = signal_z( :, 1:(i-1) );
 
 toc
 fclose(fid);
-%set(hGo,'String','Saving MAT to HDD')
-save([folder filename],'year', 'day', 'time_x', 'frequency_y', 'band', 'receiverAtt', 'powerLevel', 'signal_z');
+save('-7',[folder filename '.mat'],'year', 'day', 'time_x', 'frequency_y', 'band', 'receiverAtt', 'powerLevel', 'signal_z');
 end
 
 function [year, day] = SetDate(a)

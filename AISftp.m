@@ -1,4 +1,4 @@
-function AISftp(folder,filename,hGo,varargin)
+function AISftp(folder,filename,varargin)
 
 if ~isempty(varargin)
     host = varargin{1};
@@ -33,24 +33,25 @@ end
     
 cd(f,remDir);
 
+mkdir(folder);
+
 % get .LBL
-temp = mget(f,[filename '.lbl'],folder);
-disp(['Downloading ' [filename '.lbl'] ' from ' host])
-if ~strcmp(temp,[folder filename '.lbl'])
-    warning(['Could not download ' [filename '.lbl'] ' from ' host])
-end 
+fnlbl = [filename, '.lbl'];
+mget(f,fnlbl,[folder,fnlbl])
+if exist(fnlbl,'file') %handling bug in Octave 4.0
+  movefile(fnlbl,folder);
+end
+disp(['Downloading ', fnlbl, ' from ', host])
 
 % get .DAT
-temp = mget(f,[filename '.dat'],folder);
-disp(['Downloading ' [filename '.dat'] ' from ' host])
-if ~strcmp(temp,[folder filename '.dat'])
-    warning(['Could not download ' [filename '.dat'] ' from ' host])
+fndat = [filename '.dat'];
+mget(f,fndat,[folder,fndat])
+if exist(fndat,'file') %handling bug in Octave 4.0
+  movefile(fndat,folder);
 end
+disp(['Downloading ', fndat, ' from ', host])
 
 catch exception
-    if ~isempty(hGo)
-        set(hGo,'String','Go !')
-    end
     disp(['Could not download ' filename ' from ' host '.'])
     disp('Here are the available files in this FTP directory ')
     dir(f)

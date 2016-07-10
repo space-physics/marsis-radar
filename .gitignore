@@ -1,3 +1,6 @@
+*.avi
+*.tif
+*.png
 *.out
 *.mat
 data/
