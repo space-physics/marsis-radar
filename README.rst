@@ -1,3 +1,6 @@
+.. image:: https://zenodo.org/badge/24042603.svg
+   :target: https://zenodo.org/badge/latestdoi/24042603
+
 ============
 marsis-utils
 ============
@@ -42,6 +45,7 @@ To see the data for Sept 9, 2008 starting at 1 UT::
 
     NoGui([2008,9,9,1,0,0])
 
+data is output to the `data/` directory
 
 Reference
 =========
