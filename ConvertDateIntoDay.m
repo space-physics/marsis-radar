@@ -7,5 +7,5 @@ else
 end
 dayIndex = sum(m(1:(month-1)));
 dayIndex = dayIndex + day + 365*(year - 2005);
-        
 
+end

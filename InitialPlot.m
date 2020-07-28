@@ -1,14 +1,14 @@
 function TimeAv = InitialPlot(sD,fPanel,cs)
 
-month = sD.month; day1 = sD.day; 
+month = sD.month; day1 = sD.day;
 hour=sD.hour; minute=sD.minute; sec=sD.second;
 
-aisNumber = sD.aisNumber; 
+aisNumber = sD.aisNumber;
 
 c = 299792458; % [m/s]
 
 aisTextNum = int2str(aisNumber);
-filename = ['frm_ais_rdr_', aisTextNum]; 
+filename = ['frm_ais_rdr_', aisTextNum];
 folder = [pwd '/data/RDR', aisTextNum(1:3), 'X/'];
 %% load data from frm_ais_rdr_'aisNumber' mat file
 [year, doy, time_x, frequency_y, band, receiverAtt, powerLevel, signal_z] = ReadAisFile(folder, filename);
@@ -43,7 +43,7 @@ if ~cs.origFreqScale
     %set(hImg,'XData',freqLin)
     iXdata = freqLin;
 else
-    %set(hD,  'XLim', [freqMHz(1) freqMHz(end)])    
+    %set(hD,  'XLim', [freqMHz(1) freqMHz(end)])
     %set(hImg,'XData',freqMHz)
     iXdata = freqMHz;
 end
@@ -64,8 +64,8 @@ hImg = imagesc(iXdata,...
 set(hD,'clim',cs.CaxLim)
 
 if cs.origFreqScale %don't want inaccurate labels
-    set(hD,'xtick',[freqMHz(1), freqMHz(end)]); 
-end 
+    set(hD,'xtick',[freqMHz(1), freqMHz(end)]);
+end
 %% insert right axis labels with blank axes
 % this seems to be HG1 only -- consider yyaxis() new for R2016a
 % hD2 = axes('Parent',fPanel,'Units','pixels','Position',get(hD,'Position'),...
@@ -101,7 +101,7 @@ end
 pause(0.05) %time to composite
  a2 = 'Electric field spectral density (V^2 m^{-2} Hz^{-1})';
 text(90,360, a2,'Parent',hD,'Units','pixels','HandleVisibility','off')
- 
+
 %fix axes 2, since colorbar only pushes its peer axes down
 %set(hD2,'Position',get(hD,'Position'))
 %set(hD,'Position',Temp) %puts the axes back where they were, for new colorbar

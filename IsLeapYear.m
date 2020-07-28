@@ -1,11 +1,5 @@
-function bool = IsLeapYear(year)
-if mod(year,4) == 0
-   if (mod(year,25) == 0)
-       bool = 0;
-   else
-       bool = 1;
-   end
-   
-else
-   bool = 0;
+function leap = IsLeapYear(year)
+
+leap = mod(year, 4)==0 && (mod(year, 100) ~=0 || mod(year, 400) == 0);
+
 end

@@ -1,8 +1,5 @@
 % to create ionograms from raw data
 function [year, day, time_x, frequency_y, band, receiverAtt, powerLevel, signal_z] = ReadAisFile(folder, filename)
-try
- page_screen_output(0)
-end
 
 %% check if DATA folder exists, if not, you need to download the PDS data
 if ~exist(folder,'dir')
@@ -32,7 +29,7 @@ if ReadAISstatus
     error(['Could not automatically convert binary ' folder filename '.dat to ASCII'])
 end
 
-end %if 
+end %if
 
 fid = fopen([folder filename '.txt']);
 i = 1;
@@ -54,19 +51,19 @@ while ~feof(fid)
     if size(a,2) < 1
       continue
     end % blank line skip
-    
+
     switch a(1:11)
-        case 'Frame Begin'   
+        case 'Frame Begin'
         time_x(i) = ConvertToTime(a);
         if i==1
             [year, day] = SetDate(a);
         end
                             % end
         case 'Transmit Fr'     %if (strfind(a,'Transmit Frequency')~=0)
-        frequency_y(i) = ConvertToFrequency(a);        
+        frequency_y(i) = ConvertToFrequency(a);
                             %end
         case 'Band Number'     %if (strfind(a,'Band Number')~=0)
-        band(i) = ConvertToBand(a);        
+        band(i) = ConvertToBand(a);
                             %end
         case 'Receiver At'     %if (strfind(a,'Receiver Attenuation')~=0)
         receiverAtt(i) = ConvertReceiverAtt(a);
@@ -76,13 +73,13 @@ while ~feof(fid)
         a = fgetl(fid);
         if size(a,2) < 1
             a = fgetl(fid);
-        end   
+        end
         signal_z(:,i) = ConvertToSignal(a);
         i = i + 1;
         if ~mod(i,200)
           disp([num2str(i/num*100,'%.1f'),' %'])
         end
-    end                   
+    end
 end
 catch exception
     disp(['Error reading ', filename, ' at file pointer: ', int2str(ftell(fid)) ])
@@ -115,7 +112,7 @@ function time_x = ConvertToTime(a)
 end
 
 function freq = ConvertToFrequency(a)
-freq = str2double(a(strfind(a,'=')+1:strfind(a,'KHz')-1)); %str2double(a(22:28)); 
+freq = str2double(a(strfind(a,'=')+1:strfind(a,'KHz')-1)); %str2double(a(22:28));
 end
 
 function band = ConvertToBand(a)

@@ -29,6 +29,6 @@ cs.TimeAv = InitialPlot(cs.UserSel,[],cs);
 %% movie maker
 if ~isempty(moviefn)
     flipB(cs,moviefn)
-end 
+end
 
 end %function
