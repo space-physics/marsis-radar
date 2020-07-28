@@ -1,5 +1,6 @@
-
 # Marsis Radar
+
+[![DOI](https://zenodo.org/badge/24042603.svg)](https://zenodo.org/badge/latestdoi/24042603)
 
 Read and plot ESA MARSIS radar data.
 Works with GNU Octave and Matlab.
