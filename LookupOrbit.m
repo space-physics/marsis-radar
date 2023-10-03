@@ -1,6 +1,7 @@
-function [AISnum, ahour] = LookupOrbit(dt)
+function [AISnum, ahour] = LookupOrbit(dt, orbfile)
 arguments
   dt (1,1) datetime
+  orbfile (1,1) string = fullfile("data", "orbnum.mat")
 end
 % by Michael Hirsch
 % data in 'orbnum.mat' converted from:
@@ -11,9 +12,12 @@ end
 % then
 % use OrbReader.m to produce orbnum.mat
 
+assert(isfile(orbfile), "see README.md for how to create orbnum.mat using OrbDownload and OrbReader")
+
 ahour = hour(dt);
 
-AISorbNum = load('data/orbnum.mat','AISorbNum'); AISorbNum=AISorbNum.AISorbNum;
+AISorbNum = load(orbfile, 'AISorbNum');
+AISorbNum = AISorbNum.AISorbNum;
 
 AISnum = AISorbNum(AISorbNum(:,2)==year(dt) & AISorbNum(:,3)==month(dt) & ...
                     AISorbNum(:,4)==day(dt) & AISorbNum(:,5)==hour(dt), 1);
