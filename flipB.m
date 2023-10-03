@@ -1,9 +1,9 @@
-function flipB(cs,moviefn)
+function flipB(cs, moviefn)
 c = 299792458; % [m/s]
 %% initial setup of maker figure
 ta = cs.TimeAv;
 
-hf = figure('Toolbar','none','MenuBar','figure','Name',['Making: ', ta.filename]);
+hf = figure(Toolbar='none', MenuBar='none', Name=ta.filename);
 
 hA1 = axes('Parent',hf,'YDir','reverse');
 %hA2 = axes('Parent',hf,'position',get(hA1,'Position'),...
@@ -27,6 +27,7 @@ end
 switch ext
     case '.avi', VidType = 'Motion JPEG AVI';
     case '.mj2', VidType = 'Archival';
+    case '.mp4', VidType = "MPEG-4";
     otherwise,   VidType = [];
 end
 
@@ -36,8 +37,8 @@ if ~isempty(VidType)
     open(fVideo)
 end
 %%
-load([ta.folder, ta.filename,'.mat'],...
-     'year', 'day', 'time_x', 'frequency_y') % 'band', 'receiverAtt', 'powerLevel', 'signal_z')
+load(fullfile(ta.folder, ta.filename + ".mat"), 'dt', 'time_x', 'frequency_y', 'signal_z')
+% 'band', 'receiverAtt', 'powerLevel')
 
 stride = 160; %by inspection/documentation
 
@@ -47,23 +48,21 @@ for i = 1:Nt
     % determine current index slice
     a = ((i-1)*stride+1:i*stride);
 
-    [hour, minute, sec] = ConvertSecIndexToTime(time_x(a));
-
-    [timeDelay,freqMHz,freqLin,imC] = dataMangle(cs,frequency_y,a,signal_z);
+    [timeDelay,freqMHz,freqLin,imC] = dataMangle(cs, frequency_y, a, signal_z);
 %% plot outcome
-    a1 = (['frm\_ais\_rdr', int2str(ta.aisNumber), '   ',...
-            datestr(datenum(year,1,day,hour(1),minute(1),sec(1))), ' UT']);
+    dtp = dt + seconds(time_x(a(1)));
+    a1 = "frm\_ais\_rdr" + num2str(ta.aisNumber) + "    " + string(dtp) + " UT";
 
-    set(hA1,'YLim',c/2*[timeDelay(1), timeDelay(end)]/1e6 ); %puts axis to units of km
+    hA1.YLim = c/2*[timeDelay(1), timeDelay(end)]/1e6; %puts axis to units of km
     %set(hA2,'YLim',[timeDelay(1), timeDelay(end)])
 
     %update movie display with latest data snapshot
     if i==1
-        if ~cs.origFreqScale
-            set(hA1, 'XLim',[freqLin(1), freqLin(end)]) %linear, Gurnett scaling
+        if ~cs.origFreqScale %linear, Gurnett scaling
+            hA1.XLim = [freqLin(1), freqLin(end)];
             x = freqLin;
         else %non-linear, hardware spacing
-            set(hA1, 'XLim',[freqMHz(1), freqMHz(end)])
+            hA1.XLim = [freqMHz(1), freqMHz(end)];
             x = freqMHz;
             set(hA1, 'xtick',[freqMHz(1),freqMHz(end)])
         end
@@ -81,7 +80,8 @@ for i = 1:Nt
       set(hImg,'YData',c/2*[timeDelay(1), timeDelay(end)]/1e6, 'CData', imC)
     end
 
-    set(hT,'String',a1)
+    assert(isscalar(a1))
+    set(hT,'String', a1)
 
     if i==1
       colorbar('peer',hA1,'Location','NorthOutside')
@@ -89,15 +89,15 @@ for i = 1:Nt
 
     pause(.001) %compositor delay
     if ~isempty(VidType) %it's literally a video
-        writeVideo(fVideo,getframe(hf));
+        writeVideo(fVideo, getframe(hf));
     else %write multi-frame image
         switch ext
             case '.tif'
                 currFrame = getframe(hf);
                 imwrite(currFrame.cdata, moviefn, 'writemode','append')
             case '.png'
-                fImgName=[path,filesep,name, '_M', num2str(time_x(a(1))) '.png'];
-                print(hf,fImgName,'-dpng')
+                fImgName = fullfile(path, name + '_M' + num2str(time_x(a(1))) + ".png");
+                exportgraphics(hf, fImgName)
             case '.mat'
                 ImgS(:,:,iL) = imC;
         end
@@ -105,12 +105,12 @@ for i = 1:Nt
 end %for
 
 
-if strcmp(ext,'.mat')
+if ext == ".mat"
     save(moviefn,'ImgS','cs','freqMHz')
 end
 
-try
-    close(fVideo)
+if exist('fVideo', 'var')
+  close(fVideo)
 end
 
 end %function

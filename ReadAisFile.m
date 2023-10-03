@@ -1,37 +1,34 @@
 % to create ionograms from raw data
-function [year, day, time_x, frequency_y, band, receiverAtt, powerLevel, signal_z] = ReadAisFile(folder, filename)
+function [dt, time_x, frequency_y, band, receiverAtt, powerLevel, signal_z] = ReadAisFile(folder, filename)
 
-%% check if DATA folder exists, if not, you need to download the PDS data
-if ~exist(folder,'dir')
-    AISftp(folder,filename)
-end
+%% download the PDS data
+AISftp(folder, filename)
 %% First look to see if PDS data has already been converted to MATLAB format
-[~,filename] = fileparts(filename); %strip extension
+[~, stem] = fileparts(filename);
 
-if exist([folder filename '.mat'],'file')
-    disp(['Using existing .MAT file: ',folder, filename, '.mat'])
-    load([folder filename '.mat'],'year', 'day', 'time_x', 'frequency_y', 'band', 'receiverAtt', 'powerLevel', 'signal_z')
+aismat = fullfile(folder, stem + ".mat");
+if isfile(aismat)
+    disp("Using existing .MAT file: " + aismat)
+    load(aismat, 'dt', 'time_x', 'frequency_y', 'band', 'receiverAtt', 'powerLevel', 'signal_z')
     return
 end
 %% if MATLAB formatted data not found, see if ASCII data exists
 % if ASCII data doesn't exist, look for binary .dat file
-if exist([folder filename '.txt'],'file')
-    disp(['Converting existing ASCII file: ',folder, filename, '.txt'])
+aistxt = fullfile(folder, stem + ".txt");
+if isfile(aistxt)
+    disp("Converting existing ASCII file: " + aistxt)
 else
+  aisdat = fullfile(folder, stem + ".dat");
+  mustBeFile(aisdat)
+  exe = fullfile(pwd, "read_ais");
+  mustBeFile(exe)
 
-    if ~exist([folder filename '.dat'],'file')
-        AISftp(folder,filename)
-    end
+  ReadAISstatus = system(exe + " " + aisdat + " > " + aistxt);
 
-ReadAISstatus = system(['./read_ais ', folder filename '.dat > ' folder filename '.txt']) %#ok<NOPRT>
-
-if ReadAISstatus
-    error(['Could not automatically convert binary ' folder filename '.dat to ASCII'])
-end
-
+  assert(ReadAISstatus == 0, "Could not automatically convert binary %s to ASCII", aisdat)
 end %if
 
-fid = fopen([folder filename '.txt']);
+fid = fopen(aistxt, "r");
 i = 1;
 tic
 time_x = zeros(1,100000);
@@ -41,7 +38,7 @@ receiverAtt = zeros(1,100000);
 powerLevel = zeros(1,100000);
 signal_z = zeros(80,100000);
 
-d = dir([folder filename '.txt']);  %find filesize
+d = dir(aistxt);  %find filesize
 num = round(d(1).bytes/881); %old code: num = round(d(i).bytes/881);
 
 %%
@@ -56,7 +53,7 @@ while ~feof(fid)
         case 'Frame Begin'
         time_x(i) = ConvertToTime(a);
         if i==1
-            [year, day] = SetDate(a);
+            dt = SetDate(a);
         end
                             % end
         case 'Transmit Fr'     %if (strfind(a,'Transmit Frequency')~=0)
@@ -82,7 +79,7 @@ while ~feof(fid)
     end
 end
 catch exception
-    disp(['Error reading ', filename, ' at file pointer: ', int2str(ftell(fid)) ])
+    disp("Error reading " + filename + " at file pointer: " + int2str(ftell(fid)))
     rethrow(exception)
 end
 time_x = time_x(1:(i-1));
@@ -94,13 +91,14 @@ signal_z = signal_z( :, 1:(i-1) );
 
 toc
 fclose(fid);
-save('-7',[folder filename '.mat'],'year', 'day', 'time_x', 'frequency_y', 'band', 'receiverAtt', 'powerLevel', 'signal_z');
+save(aismat, 'dt', 'time_x', 'frequency_y', 'band', 'receiverAtt', 'powerLevel', 'signal_z');
 end
 
-function [year, day] = SetDate(a)
-  year = str2double(a(21:24));
+function dt = SetDate(a)
+  y = str2double(a(21:24));
   temp = a(26:29);
-  day = str2double(temp(1:strfind(temp,'T')-1));
+  d = str2double(temp(1:strfind(temp,'T')-1));
+  dt = datetime(y,1,1) + days(d-1);
 end
 
 function time_x = ConvertToTime(a)

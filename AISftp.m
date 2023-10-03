@@ -6,12 +6,7 @@ else
     host = 'pds-geosciences.wustl.edu';
 end
 
-try
 f = ftp(host);
-catch exception
-    disp(['Could not open FTP connection to ',host])
-    throw(exception)
-end
 
 try
 binary(f)
@@ -31,31 +26,29 @@ else
     error(['Your orbit: ',filename(end-3:end),' was not found at WUSTL at programming time. You can check manually with a web browser to see if it''s at WUSTL. Otherwise, update AISftp.m'])
 end
 
-cd(f,remDir);
-
-mkdir(folder);
+cd(f, remDir);
 
 % get .LBL
-fnlbl = [filename, '.lbl'];
-mget(f,fnlbl,[folder,fnlbl])
-if exist(fnlbl,'file') %handling bug in Octave 4.0
-  movefile(fnlbl,folder);
+fnlbl = filename + ".lbl";
+pathlbl = fullfile(folder, fnlbl);
+if ~isfile(pathlbl)
+  mget(f, fnlbl, folder);
+  disp(host + " => " + pathlbl)
 end
-disp(['Downloading ', fnlbl, ' from ', host])
 
 % get .DAT
-fndat = [filename '.dat'];
-mget(f,fndat,[folder,fndat])
-if exist(fndat,'file') %handling bug in Octave 4.0
-  movefile(fndat,folder);
+fndat = filename + ".dat";
+pathdat = fullfile(folder, fndat);
+if ~isfile(pathdat)
+  mget(f, fndat, folder)
+  disp(host + " => " + pathdat)
 end
-disp(['Downloading ', fndat, ' from ', host])
 
 catch exception
-    disp(['Could not download ' filename ' from ' host '.'])
+    disp("Could not download " + host + " => " + filename)
     disp('Here are the available files in this FTP directory ')
     dir(f)
-    error([exception.message, ' See above for directory/file listing on the FTP server.'])
+    error(exception.message + " See above for directory/file listing on the FTP server.")
 end
 
 end
