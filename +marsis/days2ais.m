@@ -1,5 +1,9 @@
-function aisDay = ConvertDayIntoAisNumber(day)
+function aisDay = days2ais(day)
 % converts day into aisDay notation, to be used to load data from that folder
+arguments
+  day {mustBeInteger}
+end
+
 x = [185, 226, 348];
 y = [1886, 2032, 2466];
 

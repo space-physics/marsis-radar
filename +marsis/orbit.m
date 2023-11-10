@@ -1,4 +1,4 @@
-function [AISnum, ahour] = LookupOrbit(dt, orbfile)
+function [AISnum, ahour] = orbit(dt, orbfile)
 arguments
   dt (1,1) datetime
   orbfile (1,1) string = fullfile("data", "orbnum.mat")
@@ -10,9 +10,9 @@ end
 % http://ssols01.esac.esa.int/adcs/SPICE/ftp_browse.php?mission=MEX&type=orbnum
 % (esa.int is more up to date)
 % then
-% use OrbReader.m to produce orbnum.mat
+% use marsis.read_orbit() produces orbnum.mat
 
-assert(isfile(orbfile), "see README.md for how to create orbnum.mat using OrbDownload and OrbReader")
+assert(isfile(orbfile), "see README.md for how to create orbnum.mat")
 
 ahour = hour(dt);
 

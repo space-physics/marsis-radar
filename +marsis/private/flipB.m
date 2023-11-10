@@ -48,7 +48,7 @@ for i = 1:Nt
     % determine current index slice
     a = ((i-1)*stride+1:i*stride);
 
-    [timeDelay,freqMHz,freqLin,imC] = dataMangle(cs, frequency_y, a, signal_z);
+    [timeDelay,freqMHz,freqLin,imC] = marsis.chirp(cs, frequency_y, a, signal_z);
 %% plot outcome
     dtp = dt + seconds(time_x(a(1)));
     a1 = "frm\_ais\_rdr" + num2str(ta.aisNumber) + "    " + string(dtp) + " UT";

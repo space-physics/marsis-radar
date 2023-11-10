@@ -1,11 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from scipy.signal import argrelmax
 from numpy.fft import fft, fftfreq
 from matplotlib.pyplot import figure, show
 from numpy import linspace, zeros, log10, diff, sin, pi
-import seaborn as sns
-
-sns.set_context("talk", font_scale=1.3)
 
 N = 100000
 tend = 0.01

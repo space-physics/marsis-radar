@@ -1,4 +1,4 @@
-function TimeAv = InitialPlot(sD, fPanel,cs)
+function TimeAv = plot(sD, fPanel,cs)
 
 dt = sD.datetime;
 aisNumber = sD.aisNumber;
@@ -9,7 +9,7 @@ aisTextNum = int2str(aisNumber);
 filename = ['frm_ais_rdr_', aisTextNum];
 folder = fullfile(pwd, "data/RDR" + aisTextNum(1:3) + "X");
 %% load data from frm_ais_rdr_'aisNumber' mat file
-ig = ReadAisFile(folder, filename);
+ig = marsis.read_ais(folder, filename);
 %% locates exact time moment
 secIndex = seconds(timeofday(ig.dt));
 a = find( (ig.time_x > secIndex - 1 ) & (ig.time_x < secIndex + 1));
@@ -26,7 +26,7 @@ TimeAv.filename = filename;
 TimeAv.aisNumber = aisNumber;
 TimeAv.datetime = dt;
 
-[timeDelay,freqMHz,freqLin,imC] = dataMangle(cs, ig.frequency_y, a, ig.signal_z);
+[timeDelay,freqMHz,freqLin,imC] = marsis.chirp(cs, ig.frequency_y, a, ig.signal_z);
 
 %% setup big panel figure
 

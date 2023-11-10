@@ -1,4 +1,4 @@
-function [timeDelay,freqMHz,freqLin,imC] = dataMangle(cStruct, frequency_y, a, signal_z)
+function [timeDelay,freqMHz,freqLin,imC] = chirp(cStruct, frequency_y, a, signal_z)
 
 timeDelay = linspace(0.25,7.5,80); %ms
 freqMHz = frequency_y(a)/1e3; % MHz

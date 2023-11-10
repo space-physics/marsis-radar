@@ -1,5 +1,5 @@
 % load, plot, playback MARSIS data without bulky main GUI
-function NoGui(dt, moviefn)
+function cs = show(dt, moviefn)
 % INPUTS
 % dt: requested datetime
 arguments
@@ -16,10 +16,10 @@ else
     cs.CaxLim = [-17, -9];
 end
 %% does data exist at all for desired day/hour?
-[cs.UserSel.aisNumber, dt.Hour] = LookupOrbit(dt);
+[cs.UserSel.aisNumber, dt.Hour] = marsis.orbit(dt);
 cs.UserSel.datetime = dt;
 %% found some data from that day, now plot
-cs.TimeAv = InitialPlot(cs.UserSel,[],cs);
+cs.TimeAv = marsis.plot(cs.UserSel,[],cs);
 %% movie maker
 if ~isempty(moviefn)
     flipB(cs,moviefn)

@@ -1,14 +1,28 @@
-function AISftp(folder,filename,varargin)
-
-if ~isempty(varargin)
-    host = varargin{1};
-else
-    host = 'pds-geosciences.wustl.edu';
+function ftp_ais(folder,filename, host)
+arguments
+    folder (1,1) string
+    filename (1,1) string
+    host (1,1) string = "pds-geosciences.wustl.edu"
 end
+
+%% is download needed
+fnlbl = filename + ".lbl";
+pathlbl = fullfile(folder, fnlbl);
+
+
+fndat = filename + ".dat";
+pathdat = fullfile(folder, fndat);
+
+if isfile(pathlbl) && isfile(pathdat)
+  return
+end
+
+%% download
 
 f = ftp(host);
 
 try
+
 binary(f)
 [~,~,~,mD] = regexp(folder,'RDR\d\d\dX');
 mD = lower(mD{1});
@@ -23,22 +37,18 @@ elseif mDn >= 254 && mDn <= 459
 elseif mDn <= 253
     remDir = ['mex/mex-m-marsis-3-rdr-ais-v1/mexmdi_1001/data/active_ionospheric_sounder/' mD];
 else
-    error(['Your orbit: ',filename(end-3:end),' was not found at WUSTL at programming time. You can check manually with a web browser to see if it''s at WUSTL. Otherwise, update AISftp.m'])
+    error(filename + " not found at WUSTL at programming time. You can check manually with a web browser to see if it''s at WUSTL.")
 end
 
 cd(f, remDir);
 
-% get .LBL
-fnlbl = filename + ".lbl";
-pathlbl = fullfile(folder, fnlbl);
+%% get .LBL
 if ~isfile(pathlbl)
   mget(f, fnlbl, folder);
   disp(host + " => " + pathlbl)
 end
 
-% get .DAT
-fndat = filename + ".dat";
-pathdat = fullfile(folder, fndat);
+%% get .DAT
 if ~isfile(pathdat)
   mget(f, fndat, folder)
   disp(host + " => " + pathdat)
@@ -48,7 +58,7 @@ catch exception
     disp("Could not download " + host + " => " + filename)
     disp('Here are the available files in this FTP directory ')
     dir(f)
-    error(exception.message + " See above for directory/file listing on the FTP server.")
+    rethrow(exception)
 end
 
 end
