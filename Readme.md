@@ -5,6 +5,14 @@
 Read and plot ESA MARSIS radar data.
 Works with GNU Octave and Matlab.
 
+## Quickstart
+
+To run a quick animated demo from scratch, automatically downloading demo data, from this directory in Matlab type:
+
+```matlab
+buildtool
+```
+
 ## main program
 
 Generate plots for the date you desire (optionally specify hour,minute,second):

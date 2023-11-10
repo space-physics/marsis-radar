@@ -16,7 +16,8 @@ xx = textscan(fid,'%u %u %s %u %u:%u:%u %*[^\n]','HeaderLines',2);
 fclose(fid);
 %% convert text times
 ii = [1:2,4:7];
-for jj = 1:6
+zz = zeros(size(xx{1},1), length(ii));
+for jj = 1:length(ii)
     zz(:,ii(jj)) = xx{ii(jj)};
 end
 

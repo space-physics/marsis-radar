@@ -1,5 +1,5 @@
 % to create ionograms from raw data
-function [dt, time_x, frequency_y, band, receiverAtt, powerLevel, signal_z] = ReadAisFile(folder, filename)
+function ig = ReadAisFile(folder, filename)
 
 %% download the PDS data
 AISftp(folder, filename)
@@ -9,7 +9,7 @@ AISftp(folder, filename)
 aismat = fullfile(folder, stem + ".mat");
 if isfile(aismat)
     disp("Using existing .MAT file: " + aismat)
-    load(aismat, 'dt', 'time_x', 'frequency_y', 'band', 'receiverAtt', 'powerLevel', 'signal_z')
+    ig = load(aismat, 'dt', 'time_x', 'frequency_y', 'band', 'receiverAtt', 'powerLevel', 'signal_z');
     return
 end
 %% if MATLAB formatted data not found, see if ASCII data exists
@@ -20,7 +20,9 @@ if isfile(aistxt)
 else
   aisdat = fullfile(folder, stem + ".dat");
   mustBeFile(aisdat)
-  exe = fullfile(pwd, "read_ais");
+
+  cwd = fileparts(mfilename("fullpath"));
+  exe = fullfile(cwd, "build/read_ais");
   mustBeFile(exe)
 
   ReadAISstatus = system(exe + " " + aisdat + " > " + aistxt);
@@ -92,6 +94,16 @@ signal_z = signal_z( :, 1:(i-1) );
 toc
 fclose(fid);
 save(aismat, 'dt', 'time_x', 'frequency_y', 'band', 'receiverAtt', 'powerLevel', 'signal_z');
+
+%% assemble output
+ig.dt = dt;
+ig.time_x = time_x;
+ig.frequency_y = frequency_y;
+ig.band = band;
+ig.receiverAtt = receiverAtt;
+ig.powerLevel = powerLevel;
+ig.signal_z = signal_z;
+
 end
 
 function dt = SetDate(a)

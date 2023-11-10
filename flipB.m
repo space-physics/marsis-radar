@@ -87,6 +87,10 @@ for i = 1:Nt
       colorbar('peer',hA1,'Location','NorthOutside')
     end
 
+    if ext == ".mat"
+       ImgS = zeros(size(imC, 1), size(imC, 2), Nt);
+    end
+
     pause(.001) %compositor delay
     if ~isempty(VidType) %it's literally a video
         writeVideo(fVideo, getframe(hf));
@@ -99,7 +103,7 @@ for i = 1:Nt
                 fImgName = fullfile(path, name + '_M' + num2str(time_x(a(1))) + ".png");
                 exportgraphics(hf, fImgName)
             case '.mat'
-                ImgS(:,:,iL) = imC;
+                ImgS(:,:, i) = imC;
         end
     end
 end %for

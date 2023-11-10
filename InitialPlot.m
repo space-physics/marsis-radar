@@ -9,24 +9,24 @@ aisTextNum = int2str(aisNumber);
 filename = ['frm_ais_rdr_', aisTextNum];
 folder = fullfile(pwd, "data/RDR" + aisTextNum(1:3) + "X");
 %% load data from frm_ais_rdr_'aisNumber' mat file
-[dt1, time_x, frequency_y, band, receiverAtt, powerLevel, signal_z] = ReadAisFile(folder, filename);
+ig = ReadAisFile(folder, filename);
 %% locates exact time moment
-secIndex = seconds(timeofday(dt));
-a = find( (time_x > secIndex - 1 ) & (time_x < secIndex + 1));
+secIndex = seconds(timeofday(ig.dt));
+a = find( (ig.time_x > secIndex - 1 ) & (ig.time_x < secIndex + 1));
 
 % user picked a time when AIS was not on; find nearby time
 if isempty(a)
-  a = findnearest(secIndex, time_x);
-  dt = dt1 + seconds(time_x(a(1)));
+  a = findnearest(secIndex, ig.time_x);
+  dt = ig.dt + seconds(ig.time_x(a(1)));
 end
 
-TimeAv.t = time_x;
+TimeAv.t = ig.time_x;
 TimeAv.folder = folder;
 TimeAv.filename = filename;
 TimeAv.aisNumber = aisNumber;
 TimeAv.datetime = dt;
 
-[timeDelay,freqMHz,freqLin,imC] = dataMangle(cs, frequency_y, a, signal_z);
+[timeDelay,freqMHz,freqLin,imC] = dataMangle(cs, ig.frequency_y, a, ig.signal_z);
 
 %% setup big panel figure
 
