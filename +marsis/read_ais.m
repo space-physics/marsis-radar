@@ -1,8 +1,12 @@
 % to create ionograms from raw data
-function ig = ReadAisFile(folder, filename)
+function ig = read_ais(folder, filename)
+arguments
+  folder (1,1) string
+  filename (1,1) string
+end
 
 %% download the PDS data
-AISftp(folder, filename)
+marsis.ftp_ais(folder, filename)
 %% First look to see if PDS data has already been converted to MATLAB format
 [~, stem] = fileparts(filename);
 
@@ -22,7 +26,7 @@ else
   mustBeFile(aisdat)
 
   cwd = fileparts(mfilename("fullpath"));
-  exe = fullfile(cwd, "build/read_ais");
+  exe = fullfile(cwd, "read_ais");
   mustBeFile(exe)
 
   ReadAISstatus = system(exe + " " + aisdat + " > " + aistxt);

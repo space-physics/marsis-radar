@@ -1,9 +1,9 @@
-function OrbReader(orbfile)
+function read_orbit(orbfile)
 % data in 'orbnum.mat' converted from:
 % ftp://naif.jpl.nasa.gov/pub/naif/pds/data/mex-e_m-spice-*
 % or
 % ftp://ssols01.esac.esa.int/pub/data/SPICE/MEX
-% use OrbReader.m to produce orbnum.mat
+% produces orbnum.mat
 arguments
   orbfile (1,1) {mustBeFile}
 end

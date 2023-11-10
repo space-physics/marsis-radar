@@ -1,5 +1,9 @@
 function [r,c,V] = findnearest(srchvalue,srcharray,bias)
-
+arguments
+    srchvalue (1,1) {mustBeNumeric}
+    srcharray {mustBeNumeric}
+    bias (1,1) {mustBeInteger} = 0
+end
 % Usage:
 % Find the nearest numerical value in an array to a search value
 % All occurances are returned as array subscripts
@@ -36,11 +40,6 @@ function [r,c,V] = findnearest(srchvalue,srcharray,bias)
 % University College London
 % t.benson@ucl.ac.uk
 
-if nargin<2
-    error('Need two inputs: Search value and search array')
-elseif nargin<3
-    bias = 0;
-end
 
 % find the differences
 srcharray = srcharray-srchvalue;
