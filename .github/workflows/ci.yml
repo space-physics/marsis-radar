@@ -24,7 +24,7 @@ jobs:
 
     - name: Install MATLAB
       timeout-minutes: 10
-      uses: matlab-actions/setup-matlab@v1
+      uses: matlab-actions/setup-matlab@v2
       with:
         release: ${{ matrix.matlab }}
 
@@ -32,4 +32,4 @@ jobs:
 
     - name: Run Matlab tests (buildtool)
       timeout-minutes: 10
-      uses: matlab-actions/run-build@v1
+      uses: matlab-actions/run-build@v2
